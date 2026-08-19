@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ELI CTKM 07/2026 — Tra cứu giá &amp; khuyến mãi</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0a4d48">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ELI CTKM">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+
+<style>
+  :root{
+    --ink:#152524;
+    --ink-soft:#4b615f;
+    --paper:#f5f7f5;
+    --card:#ffffff;
+    --line:#dde5e2;
+    --teal:#0f6e67;
+    --teal-deep:#0a4d48;
+    --teal-pale:#e3f1ee;
+    --amber:#c97a2b;
+    --amber-pale:#fbeedd;
+    --danger:#b3452f;
+    --danger-pale:#fbe9e4;
+    --radius:14px;
+    --shadow:0 1px 2px rgba(15,40,38,.06), 0 6px 20px -10px rgba(15,40,38,.18);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  .app{max-width:900px;margin:0 auto;padding:0 0 64px;}
+
+  /* Header */
+  header{
+    position:sticky; top:0; z-index:30;
+    background:linear-gradient(160deg,var(--teal-deep),var(--teal) 75%);
+    color:#fff;
+    padding:16px 16px 14px;
+    border-radius:0 0 20px 20px;
+    box-shadow:var(--shadow);
+  }
+  .brand{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+  .brand h1{margin:0;font-size:17px;font-weight:800;letter-spacing:.2px;}
+  .brand .period{
+    font-size:11.5px; font-weight:700; background:rgba(255,255,255,.16);
+    padding:3px 9px; border-radius:999px; white-space:nowrap;
+  }
+  .brand .sub{margin-top:2px;font-size:12px;color:rgba(255,255,255,.78);}
+  .install-btn{
+    margin-top:10px; width:100%; background:#fff; color:var(--teal-deep); border:none;
+    font-size:13px; font-weight:800; padding:9px 12px; border-radius:11px; cursor:pointer;
+  }
+  .ios-tip{
+    margin-top:10px; background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.24);
+    border-radius:11px; padding:9px 12px; font-size:12px; color:#fff; line-height:1.5; display:none;
+  }
+  .ios-tip.show{display:block;}
+  .ios-tip b{white-space:nowrap;}
+
+  .searchwrap{margin-top:12px;position:relative;}
+  .searchwrap input{
+    width:100%; padding:11px 14px 11px 38px; border-radius:12px; border:none;
+    font-size:15px; background:#fff; color:var(--ink);
+  }
+  .searchwrap input:focus{outline:3px solid rgba(255,255,255,.35);}
+  .searchwrap svg{position:absolute; left:12px; top:50%; transform:translateY(-50%); opacity:.5;}
+
+  .tabs{
+    display:flex; gap:6px; overflow-x:auto; margin-top:12px; padding-bottom:2px;
+    -webkit-overflow-scrolling:touch; scrollbar-width:none;
+  }
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab{
+    flex:0 0 auto; padding:7px 13px; border-radius:999px; font-size:12.5px; font-weight:700;
+    background:rgba(255,255,255,.14); color:#fff; border:1px solid rgba(255,255,255,.22);
+    cursor:pointer; white-space:nowrap; transition:background .15s;
+  }
+  .tab:hover{background:rgba(255,255,255,.24);}
+  .tab.active{background:#fff; color:var(--teal-deep); border-color:#fff;}
+
+  /* Order-value promo bar */
+  .ordervalue{
+    margin:14px 16px 0; background:var(--amber-pale); border:1px solid #eecfa4;
+    border-radius:var(--radius); padding:12px 14px; font-size:13px; color:#6b4419;
+  }
+  .ordervalue summary{font-weight:800; cursor:pointer; list-style:none; display:flex; align-items:center; gap:6px;}
+  .ordervalue summary::-webkit-details-marker{display:none;}
+  .ordervalue summary:before{content:"🎁";}
+  .ordervalue .rows{margin-top:8px; display:grid; gap:5px;}
+  .ordervalue .row{display:flex; justify-content:space-between; gap:8px; font-weight:600;}
+  .ordervalue .note{margin-top:8px; font-size:11.5px; color:#8a5a24; line-height:1.5;}
+
+  main{padding:14px 16px 0;}
+  .count{font-size:12.5px; color:var(--ink-soft); margin:10px 2px 8px; font-weight:600;}
+
+  .group-title{
+    font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:.5px;
+    color:var(--teal-deep); margin:20px 4px 8px; display:flex; align-items:center; gap:8px;
+  }
+  .group-title:first-child{margin-top:4px;}
+  .group-title .n{
+    background:var(--teal-pale); color:var(--teal-deep); font-size:11px; font-weight:800;
+    padding:1px 8px; border-radius:999px;
+  }
+
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:13px 14px; margin-bottom:10px; box-shadow:var(--shadow);
+    display:flex; gap:12px;
+  }
+  .thumb{
+    flex:0 0 auto; width:64px; height:64px; border-radius:10px; overflow:hidden;
+    background:var(--teal-pale); display:flex; align-items:center; justify-content:center;
+  }
+  .thumb img{width:100%; height:100%; object-fit:cover; display:block;}
+  .thumb.noimg{font-size:22px;}
+  .card-body{flex:1; min-width:0;}
+  .card-top{display:flex; justify-content:space-between; align-items:flex-start; gap:10px;}
+  .card h3{margin:0; font-size:15.5px; font-weight:800; line-height:1.3;}
+  .price{
+    font-size:15px; font-weight:800; color:var(--teal-deep); white-space:nowrap;
+  }
+  .price small{font-size:10.5px; font-weight:600; color:var(--ink-soft);}
+  .indication{font-size:12.8px; color:var(--ink-soft); margin-top:4px; line-height:1.45;}
+
+  .tiers{display:flex; flex-wrap:wrap; gap:6px; margin-top:10px;}
+  .tier{
+    background:var(--amber-pale); color:#7a4a17; font-size:12px; font-weight:700;
+    padding:4px 9px; border-radius:8px; border:1px solid #f0d7ac;
+  }
+  .note{
+    margin-top:8px; font-size:11.5px; color:var(--danger); background:var(--danger-pale);
+    padding:6px 9px; border-radius:8px; font-weight:600;
+  }
+
+  .pitch-box{
+    margin-top:10px; background:#fbfcfb; border:1px dashed var(--line); border-radius:9px;
+    padding:9px 11px; font-size:12.8px; color:var(--ink); line-height:1.55;
+  }
+  .card-actions{display:flex; gap:8px; margin-top:9px; flex-wrap:wrap;}
+  .act-btn{
+    background:var(--teal-pale); color:var(--teal-deep); border:none;
+    font-size:12px; font-weight:700; padding:7px 11px; border-radius:9px; cursor:pointer;
+    display:inline-flex; align-items:center; gap:5px;
+  }
+  .act-btn:hover{background:#d3e9e5;}
+  .act-btn.send{background:var(--teal); color:#fff;}
+  .act-btn.send:hover{background:var(--teal-deep);}
+  .act-btn.done{background:#cfead4; color:#1c5e33;}
+
+  .empty{text-align:center; padding:50px 20px; color:var(--ink-soft);}
+  .empty .big{font-size:34px;}
+
+  .med-list .card{padding:10px 12px;}
+  .med-list h3{font-size:13.5px;}
+  .med-list .price{font-size:13px;}
+
+  footer{
+    text-align:center; font-size:11px; color:var(--ink-soft); padding:24px 16px 4px;
+  }
+
+  @media (min-width:640px){
+    .card-top{align-items:center;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="brand">
+      <h1>ELI · Tra cứu CTKM</h1>
+      <span class="period">Tháng 07/2026</span>
+    </div>
+    <div class="sub">Bảng giá &amp; khuyến mãi — Công ty TNHH Dược Phẩm ELI</div>
+    <button id="installBtn" class="install-btn" style="display:none;">📲 Cài đặt app này lên máy</button>
+    <div id="iosTip" class="ios-tip">📲 Trên iPhone: bấm nút <b>Chia sẻ</b> (hình vuông mũi tên lên) ở thanh Safari → chọn <b>"Thêm vào MH chính"</b> để cài app.</div>
+    <div class="searchwrap">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0a4d48" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input id="search" type="search" inputmode="search" enterkeyhint="search"
+             placeholder="Tìm sản phẩm, hoạt chất, chỉ định…"
+             autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    </div>
+    <div class="tabs" id="tabs"></div>
+  </header>
+
+  <details class="ordervalue">
+    <summary>KM theo giá trị đơn hàng (áp dụng khi KH không tham gia KM riêng SP)</summary>
+    <div class="rows">
+      <div class="row"><span>Đơn hàng ≥ 750.000₫</span><span>Tặng 1 Aceta hoặc tặng hàng 10%</span></div>
+      <div class="row"><span>Đơn hàng ≥ 1.500.000₫</span><span>Tặng hàng trị giá 12%</span></div>
+      <div class="row"><span>Đơn hàng ≥ 3.000.000₫</span><span>Tặng hàng trị giá 15%</span></div>
+      <div class="row"><span>Đơn hàng ≥ 5.000.000₫</span><span>Tặng hàng trị giá 18%</span></div>
+    </div>
+    <div class="note">
+      ⚠️ Không áp dụng đồng thời với KM riêng từng SKU. Loại trừ: <strong>Befadol CF (chai/hộp), Prednisolon (chai/500v), Lasectil (chai/500v)</strong> — các SP này CHỈ dùng KM riêng SP, không cộng KM theo giá trị đơn hàng. Không áp dụng song song với hợp đồng/KM đặc biệt khác.
+    </div>
+  </details>
+
+  <main>
+    <div class="count" id="count"></div>
+    <div id="results"></div>
+    <div class="empty" id="empty" style="display:none;">
+      <div class="big">🔍</div>
+      Không tìm thấy sản phẩm phù hợp.<br>Thử từ khóa khác nhé.
+    </div>
+  </main>
+
+  <footer>Dữ liệu trích từ CTKM_07_2026 (14/07/2026) &amp; Danh mục sản phẩm ELI · Giá đã bao gồm VAT</footer>
+</div>
+
+<script>
+const CTKM_DATA = {"core": [{"stt": 1, "name": "Deslomeyer", "category": "Hô hấp – Dị ứng – Cảm sốt – Ho", "indication": "Điều trị viêm mũi dị ứng, mề đay mãn tính", "price": "70,000", "tiers": ["6 hộp + 1 hộp", "15 hộp + 3 hộp", "30 hộp +7 hộp", "50hộp +13 hộp", "100 hộp +30 hộp"], "note": ""}, {"stt": 2, "name": "Topmaxsill", "category": "Hô hấp – Dị ứng – Cảm sốt – Ho", "indication": "Điều trị ho", "price": "240,000", "tiers": ["1 hộp + 1h Comfypa 4200", "2 hộp + 1h Acetaextra", "8 hộp + 1 hộp", "22 hộp + 3 hộp", "32 hộp +5 hộp", "55 hộp +10 hộp"], "note": ""}, {"stt": 3, "name": "Ebioces", "category": "Tiêu hóa", "indication": "Hỗ trợ rối loạn tiêu hóa, cân bằng vi sinh đường ruột", "price": "120,000", "tiers": ["8 hộp + 1 hộp", "15 hộp + 2 hộp", "32 hộp + 5 hộp", "50 hộp + 9 hộp", "100 hộp + 20 hộp"], "note": ""}, {"stt": 4, "name": "Esoprazol", "category": "Tiêu hóa", "indication": "Điều trị viêm loét dạ dày – tá tràng, trào ngược", "price": "273,000", "tiers": ["7 hộp + 1 hộp", "13 hộp + 2 hộp", "23 hộp + 4 hộp", "50 hộp + 10 hộp"], "note": ""}, {"stt": 5, "name": "Meyerison", "category": "Cơ xương khớp", "indication": "Giãn cơ, trị đau cứng cổ vai gáy", "price": "120,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 hộp", "20 hộp +7 hộp", "50 hộp +20 hộp"], "note": ""}, {"stt": 6, "name": "Befadol CF", "category": "Hô hấp – Dị ứng – Cảm sốt – Ho", "indication": "Điều trị cảm: sốt, đau mỏi người, nghẹt mũi, sổ mũi", "price": "78,000", "tiers": ["8 chai + 1 chai", "22 chai + 3 chai", "32 chai + 5 chai", "55 chai + 10 chai", "100 chai + 20 chai"], "note": "Không dùng đồng thời KM theo giá trị đơn hàng (là 1 trong các SP loại trừ)"}, {"stt": 7, "name": "Befadol CF", "category": "Hô hấp – Dị ứng – Cảm sốt – Ho", "indication": "Điều trị cảm: sốt, đau mỏi người, nghẹt mũi, sổ mũi", "price": "86,000", "tiers": ["8 hộp + 1 hộp", "22 hộp + 3 hộp", "32 hộp + 5 hộp", "55 hộp + 10 hộp", "100 hộp + 20 hộp"], "note": "Không dùng đồng thời KM theo giá trị đơn hàng (là 1 trong các SP loại trừ)"}, {"stt": 8, "name": "Sentressi", "category": "Hô hấp – Dị ứng – Cảm sốt – Ho", "indication": "Viêm mũi dị ứng, khó thở hô hấp, hen suyễn", "price": "88,500", "tiers": ["6 hộp + 1 hộp", "15 hộp + 3 hộp", "33 hộp +7 hộp", "60 hộp +14 hộp", "100 hộp +25 hộp"], "note": ""}, {"stt": 9, "name": "Meyerexcold", "category": "Hô hấp – Dị ứng – Cảm sốt – Ho", "indication": "Điều trị cảm, cúm: sốt, đau mỏi người, nghẹt mũi, ho", "price": "150,000", "tiers": ["8 hộp + 1 hộp", "22 hộp + 3 hộp", "32 hộp +5 hộp", "55 hộp +10 hộp", "100 hộp +20 hộp"], "note": ""}, {"stt": 10, "name": "Socablue", "category": "Hô hấp – Dị ứng – Cảm sốt – Ho", "indication": "Viêm mũi dị ứng, khó thở hô hấp, hen suyễn", "price": "85,500", "tiers": ["6 hộp + 1 hộp", "15 hộp + 3 hộp", "33 hộp +7 hộp", "60 hộp +14 hộp", "100 hộp +25 hộp"], "note": ""}, {"stt": 11, "name": "Spinrina", "category": "Hô hấp – Dị ứng – Cảm sốt – Ho", "indication": "Viêm mũi dị ứng, khó thở hô hấp, hen suyễn", "price": "129,000", "tiers": ["7 hộp + 1 hộp", "19 hộp + 3 hộp", "33 hộp +6 hộp", "55 hộp +11 hộp", "100 hộp +22 hộp"], "note": ""}, {"stt": 12, "name": "Moseloz", "category": "Hô hấp – Dị ứng – Cảm sốt – Ho", "indication": "Viêm mũi dị ứng, khó thở hô hấp, hen suyễn", "price": "99,000", "tiers": ["6 hộp + 1 hộp", "15 hộp + 3 hộp", "33 hộp +7 hộp", "60 hộp +14 hộp", "100 hộp +25 hộp"], "note": ""}, {"stt": 13, "name": "ACETAEXTRA", "category": "Hô hấp – Dị ứng – Cảm sốt – Ho", "indication": "Hạ sốt, giảm đau, không gây buồn ngủ", "price": "89,000", "tiers": ["7 hộp + 1 hộp", "19 hộp + 3 hộp", "33 hộp +6 hộp", "55 hộp +11 hộp", "100 hộp +22 hộp", "200 hộp + 50 hộp"], "note": ""}, {"stt": 14, "name": "ID-Arsolone 4", "category": "Hô hấp – Dị ứng – Cảm sốt – Ho", "indication": "NSAID, ức chế miễn dịch, chống viêm, chống dị ứng", "price": "40,500", "tiers": ["10 hộp + 1 hộp", "25 hộp + 3 hộp", "60 hộp +8 hộp", "100 hộp +15 hộp"], "note": ""}, {"stt": 15, "name": "Comfypa 4200", "category": "Hô hấp – Dị ứng – Cảm sốt – Ho", "indication": "Kháng viêm dạng enzym, giảm sưng đau phù nề", "price": "39,000", "tiers": ["8 hộp + 1 hộp", "20 hộp + 3 hộp", "50 hộp +8 hộp", "100 hộp +20 hộp"], "note": ""}, {"stt": 16, "name": "Meyerfast (ALU)", "category": "Hô hấp – Dị ứng – Cảm sốt – Ho", "indication": "Điều trị viêm mũi dị ứng, mề đay mãn tính", "price": "75,000", "tiers": ["7 hộp + 1 hộp", "19 hộp + 3 hộp", "33 hộp +6 hộp", "55 hộp +11 hộp", "100 hộp +22 hộp"], "note": ""}, {"stt": 17, "name": "Meyermazol 500", "category": "Sản phụ khoa – Nam khoa", "indication": "Viên đặt điều trị viêm âm đạo do nấm, vi khuẩn", "price": "73,500", "tiers": ["8 Hộp + 1 hộp Meyermazol 100", "15 Hộp + 1 hộp", "40 Hộp + 3 Hộp"], "note": ""}, {"stt": 18, "name": "Gel vệ sinh Eliva 250ml", "category": "Sản phụ khoa – Nam khoa", "indication": "Gel vệ sinh vùng kín cho nam, nữ", "price": "62,000", "tiers": ["10 hộp + 1 hộp", "25 hộp + 3 hộp", "60 hộp +8 hộp", "100 hộp +15 hộp"], "note": ""}, {"stt": 19, "name": "Versiate 24", "category": "Nội thần kinh – Rối loạn tiền đình", "indication": "Điều trị hội chứng Méniere: chóng mặt, ù tai, buồn nôn", "price": "66,000", "tiers": ["5 hộp + 1 hộp", "12 hộp + 3 hộp", "30 hộp +8 hộp", "50 hộp +15 hộp"], "note": ""}, {"stt": 20, "name": "Mysimol", "category": "Hô hấp – Dị ứng – Cảm sốt – Ho", "indication": "Hạ sốt, giảm đau", "price": "60,000", "tiers": ["5 hộp + 1 hộp", "13 hộp + 3 hộp", "22 hộp +6 hộp"], "note": ""}, {"stt": 21, "name": "Versiate 16", "category": "Nội thần kinh – Rối loạn tiền đình", "indication": "Điều trị hội chứng Méniere: chóng mặt, ù tai, buồn nôn", "price": "49,500", "tiers": ["5 hộp + 1 hộp", "12 hộp + 3 hộp", "30 hộp +8 hộp", "50 hộp +15 hộp"], "note": ""}, {"stt": 22, "name": "Meyermazol 100", "category": "Sản phụ khoa – Nam khoa", "indication": "Viên đặt điều trị viêm âm đạo do nấm, vi khuẩn", "price": "25,000", "tiers": ["8 hộp + 1 hộp", "15 hộp + 2 hộp", "27 hộp + 4 hộp", "50 hộp +10 hộp", "100 hộp + 25 hộp"], "note": ""}, {"stt": 23, "name": "ID-Methein", "category": "Hô hấp – Dị ứng – Cảm sốt – Ho", "indication": "NSAID, ức chế miễn dịch, chống viêm, chống dị ứng", "price": "69,000", "tiers": ["8 hộp + 1 hộp", "20 hộp + 3 hộp", "50 hộp +10 hộp"], "note": ""}, {"stt": 24, "name": "Dung dịch xịt mũi Eliectoin 20ml", "category": "Hô hấp – Dị ứng – Cảm sốt – Ho", "indication": "Phòng ngừa, giảm triệu chứng viêm mũi dị ứng", "price": "75,000", "tiers": ["6 hộp + 1 hộp", "15 hộp + 3 hộp", "33 hộp +7 hộp", "60 hộp +14 hộp", "100 hộp +25 hộp"], "note": ""}, {"stt": 25, "name": "Dung dịch nhỏ mũi Eliectoin 10ml", "category": "Hô hấp – Dị ứng – Cảm sốt – Ho", "indication": "Phòng ngừa, giảm triệu chứng viêm mũi dị ứng", "price": "35,000", "tiers": ["6 hộp + 1 hộp", "15 hộp + 3 hộp", "33 hộp +7 hộp", "60 hộp +14 hộp", "100 hộp +25 hộp"], "note": ""}, {"stt": 26, "name": "Stomagats", "category": "Tiêu hóa", "indication": "Hỗ trợ viêm loét dạ dày – tá tràng, đầy hơi, khó tiêu", "price": "135,000", "tiers": ["3 hộp+1 hộp", "7 hộp+3 hộp", "15 hộp + 8 hộp", "25 hộp+ 18 hộp"], "note": ""}, {"stt": 27, "name": "HOACEMAX AN THIÊN MÔN 150MG", "category": "Hô hấp – Dị ứng – Cảm sốt – Ho", "indication": "Hỗ trợ điều trị ho", "price": "39.000", "tiers": ["10 hộp +1 hộp", "25 hộp + 3 hộp", "60 hộp + 8 hộp", "100 hộp + 15 hộp"], "note": ""}, {"stt": 28, "name": "LA BONE TAMIN.D.CALCI", "category": "Cơ xương khớp", "indication": "Bổ xương, hỗ trợ Canxi – Vitamin D3 – K2", "price": "96.000", "tiers": ["7 hộp +1 hộp", "19 hộp +3 hộp", "33 hộp +6 hộp", "55 hộp+11 hộp", "100 hộp+22 hộp"], "note": ""}, {"stt": 29, "name": "Ledpizin", "category": "Hô hấp – Dị ứng – Cảm sốt – Ho", "indication": "Điều trị ho khan", "price": "117.000", "tiers": ["2 hộp +1 hộp Comfypa", "6 hộp + 1 hộp", "15 hộp +3 hộp"], "note": ""}, {"stt": 30, "name": "Prednisolon", "category": "Hô hấp – Dị ứng – Cảm sốt – Ho", "indication": "NSAID, ức chế miễn dịch, chống viêm, chống dị ứng", "price": "140,000", "tiers": ["3 chai + 1 hộp Comfypa 4200", "6 chai + 1 hộp Acetaextra", "9 chai + 1 chai", "22 chai + 3 chai"], "note": "Không dùng đồng thời KM theo giá trị đơn hàng (là 1 trong các SP loại trừ)"}, {"stt": 31, "name": "Comtracbudex", "category": "Da liễu", "indication": "Hỗ trợ trị sẹo", "price": "56,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 32, "name": "HIDEM Derma Gel", "category": "Da liễu", "indication": "Hỗ trợ sẹo mụn", "price": "62,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 33, "name": "Panthennol Nano Bạc ( nhãn cam)", "category": "Da liễu", "indication": "Xịt hỗ trợ trị bỏng, nứt da", "price": "128,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 34, "name": "Panthennol Nano Bạc ( nhãn đỏ)", "category": "Da liễu", "indication": "Xịt hỗ trợ trị bỏng, nứt da", "price": "128,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 35, "name": "Daxkazin Oral gel", "category": "Rơ miệng – Sơ sinh", "indication": "Rơ miệng, lưỡi cho bé sơ sinh", "price": "62,000", "tiers": ["5 hộp + 1 hộp", "12 hộp + 3 Hộp"], "note": ""}, {"stt": 36, "name": "Oxnas Tablet 1g", "category": "Kháng sinh", "indication": "Điều trị nhiễm khuẩn nặng", "price": "632,000", "tiers": ["01 hộp + 1 hộp Acetaextra", "05 hộp + 1 hộp", "12 hộp + 3 hộp", "20 hộp + 6 hộp"], "note": ""}, {"stt": 37, "name": "Fexofenadin", "category": "Hô hấp – Dị ứng – Cảm sốt – Ho", "indication": "Điều trị viêm mũi dị ứng, mề đay mãn tính", "price": "12,600", "tiers": ["10 hộp + 1 hộp", "25 hộp + 3 hộp", "60 hộp +8 hộp", "100 hộp +15 hộp", "200 hộp + 38 hộp"], "note": ""}, {"stt": 38, "name": "Gel vệ sinh Eliva 150ml", "category": "Sản phụ khoa – Nam khoa", "indication": "Gel vệ sinh vùng kín cho nam, nữ", "price": "45,000", "tiers": ["10 hộp + 1 hộp", "25 hộp + 3 hộp", "60 hộp +8 hộp", "100 hộp +15 hộp"], "note": ""}, {"stt": 39, "name": "Eurogestan", "category": "Chăm sóc tóc – Móng", "indication": "Hỗ trợ kích thích mọc tóc, giúp tóc chắc khỏe", "price": "44,000", "tiers": ["10 hộp + 1 hộp", "25 hộp + 3 hộp", "60 hộp +8 hộp", "100 hộp +15 hộp"], "note": ""}, {"stt": 40, "name": "Phagofi 4", "category": "Hô hấp – Dị ứng – Cảm sốt – Ho", "indication": "Viêm mũi dị ứng, khó thở hô hấp, hen suyễn", "price": "99,000", "tiers": ["7 hộp + 1 hộp", "19 hộp + 3 hộp", "33 hộp +6 hộp", "55 hộp +11 hộp", "100 hộp +22 hộp ."], "note": ""}, {"stt": 41, "name": "Babi B.O.N", "category": "Thuốc bổ (Nhi)", "indication": "Phòng và điều trị các bệnh do thiếu vitamin D", "price": "39,500", "tiers": ["6 hộp + 1 hộp", "15 hộp + 3 hộp", "33 hộp +7 hộp", "50 hộp +13 hộp"], "note": ""}, {"stt": 42, "name": "Trigeston new", "category": "Hậu môn – Trực tràng", "indication": "Hỗ trợ điều trị trĩ, giãn tĩnh mạch chân", "price": "89,000", "tiers": ["10 hộp + 1 hộp", "25 hộp + 3 hộp", "60 hộp +8 hộp", "100 hộp +15 hộp"], "note": ""}, {"stt": 43, "name": "Eurogestan Gold", "category": "Chăm sóc tóc – Móng", "indication": "Hỗ trợ kích thích mọc tóc, giúp tóc chắc khỏe", "price": "65,000", "tiers": ["7 hộp + 1 hộp", "13 hộp + 2 hộp", "23 hộp + 4 hộp", "50 hộp + 10 hộp", "100 hộp + 25 hộp"], "note": ""}, {"stt": 44, "name": "Nirozan cream 10g", "category": "Da liễu", "indication": "Hỗ trợ trị viêm da, nấm", "price": "41,000", "tiers": ["5 hộp + 1 hộp", "12 hộp + 3 Hộp"], "note": ""}, {"stt": 45, "name": "Nirozan cream 5g", "category": "Da liễu", "indication": "Hỗ trợ trị viêm da, nấm", "price": "27,000", "tiers": ["5 hộp + 1 hộp", "12 hộp + 3 hộp"], "note": ""}, {"stt": 46, "name": "Dung dịch xịt mũi ưu trương DR.HAPPY", "category": "Hô hấp – Dị ứng – Cảm sốt – Ho", "indication": "Sát khuẩn, chống viêm đường hô hấp trên, giữ ẩm niêm mạc", "price": "45,000", "tiers": ["5 hộp + 1 hộp", "10 hộp + 3 hộp"], "note": ""}, {"stt": 47, "name": "Amicogel-Api", "category": "Tiêu hóa", "indication": "Trung hòa acid dạ dày", "price": "114,000", "tiers": ["5 hộp + 1 hộp", "10 hộp + 3 hộp"], "note": ""}, {"stt": 48, "name": "Lasectil", "category": "Tiêu hóa", "indication": "Điều trị viêm loét dạ dày – tá tràng, trào ngược", "price": "360,000", "tiers": ["1 hộp + 1 hộp Comfypa 4200", "2 hộp + 1 hộp Acetaextra", "5 hộp + 3 hộp Acetaextra"], "note": "Không dùng đồng thời KM theo giá trị đơn hàng (là 1 trong các SP loại trừ)"}, {"stt": 49, "name": "Ostovit", "category": "Cơ xương khớp", "indication": "Giảm thoái hóa khớp gối độ nhẹ – trung bình", "price": "450,000", "tiers": ["1 hộp + 1 hộp Acetaextra", "5 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 50, "name": "Sulmuk", "category": "Hô hấp – Dị ứng – Cảm sốt – Ho", "indication": "Rối loạn tiết dịch đường hô hấp: viêm mũi họng, viêm phế quản", "price": "63,000", "tiers": ["5 hộp + 1 hộp Comfypa", "10 hộp + 1 hộp Acetaextra"], "note": ""}, {"stt": 51, "name": "TBAugMedic 875mg/ 125mg", "category": "Kháng sinh", "indication": "Điều trị nhiễm khuẩn nặng", "price": "105,000", "tiers": ["6 hộp + 1 hộp", "10 hộp + 2 hộp"], "note": ""}, {"stt": 52, "name": "Hazencol", "category": "Hô hấp – Dị ứng – Cảm sốt – Ho", "indication": "Tiêu chất nhầy (đàm)", "price": "48,000", "tiers": ["7 hộp + 1 hộp", "12 hộp + 2 hộp"], "note": ""}, {"stt": 53, "name": "Lecogis", "category": "Hô hấp – Dị ứng – Cảm sốt – Ho", "indication": "Dị ứng: hen phế quản, viêm mũi/da dị ứng, mề đay", "price": "35,000", "tiers": ["7 hộp + 1 hộp", "12 hộp + 2 hộp"], "note": ""}, {"stt": 54, "name": "DIPROLAG", "category": "Da liễu", "indication": "Hỗ trợ trị viêm da, nấm", "price": "42,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 55, "name": "Denovad Mpro", "category": "Da liễu", "indication": "Hỗ trợ trị viêm da, ngứa", "price": "62,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 56, "name": "SUBTYL Pro Liquid", "category": "Tiêu hóa", "indication": "Hỗ trợ rối loạn tiêu hóa, cân bằng vi sinh đường ruột", "price": "99,000", "tiers": ["7 hộp + 1 hộp", "13 hộp + 2 hộp", "23 hộp + 4 hộp", "50 hộp + 10 hộp"], "note": ""}, {"stt": 57, "name": "Meyerlukast 5", "category": "Hô hấp – Dị ứng – Cảm sốt – Ho", "indication": "Viêm mũi dị ứng, khó thở hô hấp, hen suyễn", "price": "84,000", "tiers": ["8 hộp + 1 hộp", "22 hộp + 3 hộp", "50 hộp + 8 hộp"], "note": ""}, {"stt": 58, "name": "PROLOCPLUS", "category": "Hậu môn – Trực tràng", "indication": "Dưỡng ẩm, giảm triệu chứng trĩ, khô rát quanh hậu môn", "price": "65,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 hộp"], "note": ""}, {"stt": 59, "name": "Sản phẩm hỗ trợ phụ khoa HIDEMPRO", "category": "Sản phụ khoa – Nam khoa", "indication": "Bảo vệ niêm mạc âm đạo, ngừa viêm nhiễm, nấm ngứa", "price": "179,000", "tiers": ["3 hộp + 1 hộp", "10 hộp + 5 hộp"], "note": ""}, {"stt": 60, "name": "Nirozanmpro 5g", "category": "Da liễu", "indication": "Hỗ trợ trị viêm da, nấm", "price": "27,000", "tiers": ["5 hộp + 1 hộp", "12 hộp + 3 hộp"], "note": ""}, {"stt": 61, "name": "MULTIVITAMIN B-20 GOLD", "category": "Thuốc bổ (Người lớn)", "indication": "Bổ sung Lysine, vitamin, tăng đề kháng", "price": "145,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 hộp"], "note": ""}, {"stt": 62, "name": "Sản phẩm hỗ trợ trực tràng PROLOCPLUS", "category": "Hậu môn – Trực tràng", "indication": "Hỗ trợ trĩ nội/ngoại, nứt kẽ hậu môn, co búi trĩ", "price": "209,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 hộp"], "note": ""}, {"stt": 63, "name": "Hepanin", "category": "Thuốc bổ gan", "indication": "Hỗ trợ giải độc gan, bảo vệ – tăng cường chức năng gan", "price": "180,000", "tiers": ["3 hộp + 1 hộp", "10 hộp + 5 hộp"], "note": ""}, {"stt": 64, "name": "Gel Seoarmin", "category": "Da liễu", "indication": "Dưỡng ẩm, làm mờ sẹo, thâm da", "price": "59,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 hộp"], "note": ""}, {"stt": 65, "name": "Veintain Plus", "category": "Da liễu", "indication": "Dưỡng ẩm, làm mờ vết rạn, thâm da", "price": "59,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 hộp"], "note": ""}, {"stt": 66, "name": "Mangozonas TĐ", "category": "Da liễu", "indication": "Làm sạch, kháng khuẩn, dịu da: mụn nhọt, mẩn ngứa, bỏng nhẹ", "price": "58,500", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 hộp"], "note": ""}, {"stt": 67, "name": "Felin StarUSA", "category": "Thuốc bổ (Nhi)", "indication": "Bổ sung sắt, acid folic, hỗ trợ tạo máu", "price": "130,000", "tiers": ["3 hộp + 1 hộp", "10 hộp + 5 hộp"], "note": ""}], "medical": [{"stt": 68, "name": "Băng keo cá nhân màu da ACE BAND-S (SHEER) 72mm x 18mm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "57,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 hộp", "20 hộp + 7 hộp"], "note": ""}, {"stt": 69, "name": "Băng keo cá nhân màu da ACE BAND-S (SHEER) 72mm x 18mm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "10,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 hộp", "20 hộp + 7 hộp"], "note": ""}, {"stt": 70, "name": "Băng keo cá nhân màu da ACE BAND- S (SHEER) Ø22mm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "39,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 hộp"], "note": ""}, {"stt": 71, "name": "Băng keo cá nhân trong suốt ACE BAND-S (TRANSPARENT) 72mm x 18mm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "57,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 hộp", "20 hộp + 7 hộp"], "note": ""}, {"stt": 72, "name": "Băng keo cá nhân trong suốt ACE BAND-S (TRANSPARENT) 72mm x 18mm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "10,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 hộp", "20 hộp + 7 hộp"], "note": ""}, {"stt": 73, "name": "Băng keo cá nhân vải ACE BAND-F 72mm x 18mm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "59,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 hộp", "20 hộp + 7 hộp"], "note": ""}, {"stt": 74, "name": "Băng keo cá nhân vải ACE BAND-F 60mm x 19mm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "55,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 hộp", "20 hộp + 7 hộp"], "note": ""}, {"stt": 75, "name": "Băng keo cá nhân vải ACE BAND-F 72mm x 18mm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "10,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 hộp", "20 hộp + 7 hộp"], "note": ""}, {"stt": 76, "name": "Băng cá nhân không thấm nước WATERPROOF PLASTER 2 size", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "19,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 hộp", "20 hộp + 7 hộp"], "note": ""}, {"stt": 77, "name": "Băng keo cá nhân in hình KIDS BAND (PORORO) 72mm x 18mm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "27,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 hộp", "20 hộp + 7 hộp"], "note": ""}, {"stt": 78, "name": "Băng keo cá nhân in hình KIDS BAND (PORORO) 4 size", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "27,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 hộp", "20 hộp + 7 hộp"], "note": ""}, {"stt": 79, "name": "Băng keo cá nhân in hình KIDS BAND (PORORO) 72mm x 18mm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "14,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 hộp", "20 hộp + 7 hộp"], "note": ""}, {"stt": 80, "name": "Băng keo cá nhân in hình KIDS BAND (PORORO) Ø22mm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "54,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 hộp", "20 hộp + 7 hộp"], "note": ""}, {"stt": 81, "name": "Băng dán ép cầm máu ADFLEX-SI 72mm x 30mm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "450,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 hộp", "20 hộp + 7 hộp"], "note": ""}, {"stt": 82, "name": "Băng keo cuộn lụa YOUNG PLASTER- SILK 1.25cm x 5m", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "17,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 hộp", "20 hộp + 7 hộp"], "note": ""}, {"stt": 83, "name": "Băng keo cuộn lụa YOUNG PLASTER- SILK 2.5cm x 5m", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "25,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 hộp", "20 hộp + 7 hộp"], "note": ""}, {"stt": 84, "name": "Băng keo cuộn lụa YOUNG PLASTER- SILK 5cm x 5m", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "40,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 85, "name": "Băng keo cuộn lụa YOUNG PLASTER- SILK 1.25cm x 5m", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "360,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 hộp", "20 hộp + 7 hộp"], "note": ""}, {"stt": 86, "name": "Băng keo cuộn lụa YOUNG PLASTER- SILK 2.5cm x 5m", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "264,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 hộp", "20 hộp + 7 hộp"], "note": ""}, {"stt": 87, "name": "Băng keo cuộn lụa YOUNG PLASTER- SILK 5cm x 5m", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "222,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 88, "name": "Băng keo cuộn lụa YOUNG PLASTER- SILK 1.25cm x 9.1m", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "560,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 89, "name": "Băng keo cuộn lụa YOUNG PLASTER- SILK 2.5cm x 9.1m", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "510,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 90, "name": "Băng keo cuộn lụa YOUNG PLASTER- SILK 5cm x 9.1m", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "490,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 91, "name": "Băng keo cuộn giấy YOUNG PLASTER- PAPER (white) 1.25cm x 5m", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "12,500", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 92, "name": "Băng keo cuộn giấy YOUNG PLASTER- PAPER (white) 2.5cm x 5m", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "21,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 93, "name": "Băng keo cuộn giấy YOUNG PLASTER- PAPER (white) 1.25cm x 5m", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "260,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 94, "name": "Băng keo cuộn giấy YOUNG PLASTER- PAPER (brown) 1.25cm x 5m", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "260,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 95, "name": "Băng keo cuộn giấy YOUNG PLASTER- PAPER (white) 2.5cm x 5m", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "230,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 96, "name": "Băng keo cuộn giấy YOUNG PLASTER- PAPER (brown) 2.5cm x 5m", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "230,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 97, "name": "Băng keo cuộn giấy YOUNG PLASTER- PAPER (white) 5cm x 5m", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "220,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 98, "name": "Băng keo cuộn giấy YOUNG PLASTER- PAPER (brown) 5cm x 5m", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "220,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 99, "name": "Băng keo cuộn giấy YOUNG PLASTER- PAPER (white) 1.25cm x 9.1m", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "440,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 100, "name": "Băng keo cuộn giấy YOUNG PLASTER- PAPER (brown) 1.25cm x 9.1m", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "440,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 101, "name": "Băng keo cuộn giấy YOUNG PLASTER- PAPER (white) 2.5cm x 9.1m", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "390,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 102, "name": "Băng keo cuộn giấy YOUNG PLASTER- PAPER (brown) 2.5cm x 9.1m", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "390,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 103, "name": "Băng keo cuộn giấy YOUNG PLASTER- PAPER (white) 5cm x 9.1m", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "384,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 104, "name": "Băng keo cuộn giấy YOUNG PLASTER- PAPER (brown) 5cm x 9.1m", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "384,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 105, "name": "Băng keo cuộn co giãn FIX ROLL 10cm x 2.5m", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "47,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 106, "name": "Băng keo cuộn co giãn FIX ROLL 5cm x 10m", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "82,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 107, "name": "Băng keo cuộn co giãn FIX ROLL 10cm x 10m", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "150,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 108, "name": "Băng keo cuộn co giãn FIX ROLL 15cm x 10m", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "230,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 109, "name": "Băng thun có keo cố định YOUNG CREPE 6cm x 4.5m", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "115,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 110, "name": "Băng thun có keo cố định YOUNG CREPE 8cm x 4.5m", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "135,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 111, "name": "Băng thun có keo cố định YOUNG CREPE 10cm x 4.5m", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "165,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 112, "name": "Băng cuộn cố định trong suốt ADFLEX ROLL 10cm x 10m", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "920,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 113, "name": "Băng cuộn cố định trong suốt ADFLEX ROLL 15cm x 10m", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "1,250,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 114, "name": "Băng gạc vô trùng YOUNG WOUND DRESSING 6cm x 7cm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "175,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 hộp", "20 hộp + 7 hộp"], "note": ""}, {"stt": 115, "name": "Băng gạc vô trùng YOUNG WOUND DRESSING 6cm x 10cm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "250,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 hộp", "20 hộp + 7 hộp"], "note": ""}, {"stt": 116, "name": "Băng gạc vô trùng YOUNG WOUND DRESSING 9cm x 10cm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "320,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 hộp", "20 hộp + 7 hộp"], "note": ""}, {"stt": 117, "name": "Băng gạc vô trùng YOUNG WOUND DRESSING 9cm x 15cm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "420,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 hộp", "20 hộp + 7 hộp"], "note": ""}, {"stt": 118, "name": "Băng gạc vô trùng YOUNG WOUND DRESSING 9cm x 20cm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "490,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 hộp", "20 hộp + 7 hộp"], "note": ""}, {"stt": 119, "name": "Băng gạc vô trùng YOUNG WOUND DRESSING 9cm x 25cm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "550,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 hộp", "20 hộp + 7 hộp"], "note": ""}, {"stt": 120, "name": "Băng gạc vô trùng YOUNG WOUND DRESSING 9cm x 30cm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "720,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 hộp", "20 hộp + 7 hộp"], "note": ""}, {"stt": 121, "name": "Băng gạc vô trùng không thấm nước STERILE ADFLEX (With-pad) 6cm x 7cm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "420,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 122, "name": "Băng gạc vô trùng không thấm nước STERILE ADFLEX (With-pad) 6cm x 10cm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "560,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 123, "name": "Băng gạc vô trùng không thấm nước STERILE ADFLEX (With-pad) 9cm x 10cm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "750,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 124, "name": "Băng gạc vô trùng không thấm nước STERILE ADFLEX (With-pad) 9cm x 15cm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "940,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 125, "name": "Băng gạc vô trùng không thấm nước STERILE ADFLEX (With-pad) 9cm x 20cm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "1,190,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 126, "name": "Băng gạc vô trùng không thấm nước STERILE ADFLEX (With-pad) 9cm x 25cm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "1,350,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 127, "name": "Băng gạc vô trùng không thấm nước STERILE ADFLEX (With-pad) 10cm x 12cm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "920,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 128, "name": "Băng vô trùng không thấm nước STERILE ADFLEX (Non-pad) 6cm x 7cm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "650,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 129, "name": "Băng vô trùng không thấm nước STERILE ADFLEX (Non-pad) 6cm x 10cm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "500,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 130, "name": "Băng vô trùng không thấm nước STERILE ADFLEX (Non-pad) 9cm x 10cm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "650,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 131, "name": "Băng vô trùng không thấm nước STERILE ADFLEX (Non-pad) 9cm x 15cm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "830,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 132, "name": "Băng vô trùng không thấm nước STERILE ADFLEX (Non-pad) 9cm x 20cm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "1,050,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 133, "name": "Băng vô trùng không thấm nước STERILE ADFLEX (Non-pad) 9cm x 25cm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "1,250,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 134, "name": "Băng vô trùng không thấm nước STERILE ADFLEX (Non-pad) 10cm x 12cm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "780,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 135, "name": "Gạc đặt ống thông YOUNG TUBING PAD 6cm x 7cm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "450,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 136, "name": "Gạc đặt ống thông YOUNG TUBING PAD 8cm x 9cm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "600,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 137, "name": "Băng keo cố định kim luồn WOUND -IV (With-pad) 6cm x 7cm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "360,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 138, "name": "Băng keo cố định kim luồn không thấm nước ADFLEX\u0002IV 5.1cm x 6.0cm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "450,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 139, "name": "Băng keo cố định kim luồn không thấm nước ADFLEX\u0002IV 6.7cm x 10cm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "350,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 140, "name": "Băng hỗ trợ làm lành vết thương SOMADERM SPOT", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "38,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 141, "name": "Băng hỗ trợ làm lành vết thương SOMADERM SPOT", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "55,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 142, "name": "Băng hỗ trợ làm lành vết thương SOMADERM- L 7.5cm x 7.5cm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "46,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 143, "name": "Băng xốp vết thương Therasorb Algi Plus Hydrophilic 5cm x 20cm (Foam 5x20x0.5cm)", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "1,100,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 144, "name": "Băng xốp vết thương Therasorb Algi Plus Hydrophilic 10cm x 10cm (Foam 10x10x0.5cm)", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "1,100,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 145, "name": "Băng xốp vết thương Therasorb Algi Plus Hydrophilic 10cm x 20cm (Foam 10x20x0.5cm)", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "2,120,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 146, "name": "Băng xốp vết thương Therasorb Algi Plus Hydrophilic 20cm x 20cm (Foam 20x20x0.5cm)", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "3,980,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 147, "name": "Băng xốp vết thương Therasorb Border 7.5cm x 7.5cm (Foam 5x5x0.2cm)", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "980,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 148, "name": "Băng xốp vết thương Therasorb Border 10cm x 10cm (Foam 6.5x6.5x0.2cm)", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "1,120,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 149, "name": "Băng xốp vết thương Therasorb Border 9cm x 15cm (Foam 5x10x0.2cm)", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "1,250,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 150, "name": "Băng xốp vết thương Therasorb Border 9cm x 25cm (Foam 5x20x0.2cm)", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "1,780,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 151, "name": "Băng xốp vết thương Therasorb Algi Plus Adhesive 7.5cm x 7.5cm (Foam 5x5x0.2cm)", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "750,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 152, "name": "Băng xốp vết thương Therasorb Algi Plus Adhesive 9cm x 15cm (Foam 5x10x0.2cm)", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "950,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 153, "name": "Băng xốp vết thương Therasorb Algi Plus Adhesive 9cm x 20cm (Foam 5x15x0.2cm)", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "1,120,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 154, "name": "Băng xốp vết thương Therasorb Algi Plus Adhesive 9cm x 25cm (Foam 5x20x0.2cm)", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "1,380,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 155, "name": "Băng xốp vết thương Therasorb Algi Plus Adhesive 9cm x 30cm (Foam 5x25x0.2cm)", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "1,600,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 156, "name": "Băng xốp vết thương Therasorb Algi Plus Adhesive 14cm x 14cm (Foam 10x10x0.5cm)", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "1,400,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 157, "name": "Băng xốp vết thương Therasorb Ag Plus 10cm x 10cm (Foam 10x10x0.5cm)", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "2,060,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 158, "name": "Băng xốp vết thương Therasorb Ag Plus 20cm x 20cm (Foam 20x20x0.5cm)", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "7,720,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 159, "name": "Băng dán Hydrocolloid Renoderm 10cm x 10cm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "2,350,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 160, "name": "Băng dán Hydrocolloid Renoderm 20cm x 20cm", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "2,040,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 161, "name": "Miếng dán silicone mờ sẹo Remscar TR 3.5x15cm, 1 miếng/hộp", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "450,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 162, "name": "Miếng dán silicone mờ sẹo Remscar TR 5x6cm, 2 miếng/hộp", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "430,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 163, "name": "Miếng dán silicone mờ sẹo Remscar TR 12x15cm, 1 miếng/hộp", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "940,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 164, "name": "Gel silicone mờ sẹo Remscar Gel 15g, 1 tuýp/hộp", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "320,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 165, "name": "Gel silicone mờ sẹo Remscar Gel 30g, 1 tuýp/hộp", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "480,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 166, "name": "Hydrogel kháng khuẩn SurgiGel 30g, 1 tuýp/hộp", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "430,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 167, "name": "Vật liệu cầm máu tự tiêu SURGIGUARD ORIGINAL 5x7.5cm, 12 miếng/hộp", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "3,204,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 168, "name": "Vật liệu cầm máu tự tiêu SURGIGUARD ORIGINAL 10x20cm, 12 miếng/hộp", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "7,596,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 169, "name": "Vật liệu cầm máu tự tiêu SURGIGUARD FIBRILLAR 2.5x5.1cm, 10 miếng/hộp", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "5,720,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 170, "name": "Vật liệu cầm máu tự tiêu SURGIGUARD FIBRILLAR 5.1x10.2cm, 10 miếng/hộp", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "7,580,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 171, "name": "Vật liệu cầm máu tự tiêu SURGIGUARD NON-WOVEN 2.5x5.1cm, 10 miếng/hộp", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "6,350,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}, {"stt": 172, "name": "Vật liệu cầm máu tự tiêu SURGIGUARD NON-WOVEN 5.1x10.2cm, 10 miếng/hộp", "category": "Vật tư y tế – Băng gạc (Young Chemical Vina)", "indication": "", "price": "8,390,000", "tiers": ["4 hộp + 1 hộp", "10 hộp + 3 Hộp"], "note": ""}]};
+const PRODUCT_IMAGES = {"1": "images/1.jpg", "2": "images/2.jpg", "3": "images/3.jpg", "4": "images/4.jpg", "5": "images/5.jpg", "6": "images/6.jpg", "7": "images/7.jpg", "8": "images/8.jpg", "9": "images/9.jpg", "10": "images/10.jpg", "11": "images/11.jpg", "12": "images/12.jpg", "13": "images/13.jpg", "14": "images/14.jpg", "15": "images/15.jpg", "16": "images/16.jpg", "17": "images/17.jpg", "18": "images/18.jpg", "19": "images/19.jpg", "20": "images/20.jpg", "21": "images/21.jpg", "22": "images/22.jpg", "23": "images/23.jpg", "24": "images/24.jpg", "25": "images/25.jpg", "26": "images/26.jpg", "27": "images/27.jpg", "28": "images/28.jpg", "29": "images/29.jpg", "30": "images/30.jpg", "31": "images/31.jpg", "32": "images/32.jpg", "33": "images/33.jpg", "34": "images/34.jpg", "35": "images/35.jpg", "36": "images/36.jpg", "37": "images/37.jpg", "38": "images/38.jpg", "39": "images/39.jpg", "41": "images/41.jpg", "42": "images/42.jpg", "43": "images/43.jpg", "44": "images/44.jpg", "45": "images/45.jpg", "46": "images/46.jpg", "47": "images/47.jpg", "48": "images/48.jpg", "49": "images/49.jpg", "50": "images/50.jpg", "51": "images/51.jpg", "52": "images/52.jpg", "53": "images/53.jpg", "54": "images/54.jpg", "55": "images/55.jpg", "56": "images/56.jpg", "58": "images/58.jpg", "59": "images/59.jpg", "60": "images/60.jpg", "61": "images/61.jpg", "62": "images/62.jpg", "63": "images/63.jpg"};
+</script>
+<script>
+const CATEGORY_ORDER = [
+  "Tất cả",
+  "Hô hấp – Dị ứng – Cảm sốt – Ho",
+  "Tiêu hóa",
+  "Da liễu",
+  "Cơ xương khớp",
+  "Sản phụ khoa – Nam khoa",
+  "Kháng sinh",
+  "Nội thần kinh – Rối loạn tiền đình",
+  "Hậu môn – Trực tràng",
+  "Thuốc bổ (Nhi)",
+  "Thuốc bổ (Người lớn)",
+  "Thuốc bổ gan",
+  "Chăm sóc tóc – Móng",
+  "Rơ miệng – Sơ sinh",
+  "Vật tư y tế – Băng gạc (Young Chemical Vina)"
+];
+
+const CATEGORY_EMOJI = {
+  "Hô hấp – Dị ứng – Cảm sốt – Ho":"🌬️",
+  "Tiêu hóa":"🍽️",
+  "Da liễu":"🧴",
+  "Cơ xương khớp":"🦴",
+  "Sản phụ khoa – Nam khoa":"🌸",
+  "Kháng sinh":"💊",
+  "Nội thần kinh – Rối loạn tiền đình":"🧠",
+  "Hậu môn – Trực tràng":"🩹",
+  "Thuốc bổ (Nhi)":"🧒",
+  "Thuốc bổ (Người lớn)":"💪",
+  "Thuốc bổ gan":"🫀",
+  "Chăm sóc tóc – Móng":"💇",
+  "Rơ miệng – Sơ sinh":"👶",
+  "Vật tư y tế – Băng gạc (Young Chemical Vina)":"🩹"
+};
+
+const ALL_CORE = CTKM_DATA.core;
+const ALL_MED = CTKM_DATA.medical;
+const ALL_ITEMS = ALL_CORE.concat(ALL_MED);
+
+let activeCat = "Tất cả";
+let query = "";
+
+function norm(s){
+  return (s||"").toString().toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .replace(/đ/g,"d");
+}
+
+function renderTabs(){
+  const tabs = document.getElementById('tabs');
+  const counts = {};
+  ALL_ITEMS.forEach(it=>{ counts[it.category] = (counts[it.category]||0)+1; });
+  tabs.innerHTML = CATEGORY_ORDER.map(cat=>{
+    const label = cat === "Tất cả" ? `Tất cả (${ALL_ITEMS.length})` : `${cat} (${counts[cat]||0})`;
+    const cls = cat === activeCat ? "tab active" : "tab";
+    return `<div class="${cls}" data-cat="${encodeURIComponent(cat)}">${label}</div>`;
+  }).join("");
+  tabs.querySelectorAll('.tab').forEach(t=>{
+    t.addEventListener('click', ()=>{
+      activeCat = decodeURIComponent(t.getAttribute('data-cat'));
+      renderTabs();
+      renderResults();
+    });
+  });
+}
+
+function matches(it){
+  if (activeCat !== "Tất cả" && it.category !== activeCat) return false;
+  if (!query) return true;
+  const q = norm(query);
+  return norm(it.name).includes(q) || norm(it.indication).includes(q) || norm(it.category).includes(q);
+}
+
+function pitchText(it){
+  const parts = [];
+  parts.push(`🩺 *${it.name}*`);
+  if (it.indication) parts.push(it.indication + '.');
+  parts.push(`💰 Giá: ${it.price}đ/đơn vị.`);
+  if (it.tiers && it.tiers.length){
+    parts.push(`🎁 Ưu đãi T07/2026: mua ${it.tiers[0]}` + (it.tiers.length>1 ? `, càng mua nhiều càng lời — tối đa ${it.tiers[it.tiers.length-1]}.` : '.'));
+  }
+  if (it.note){ parts.push('⚠️ ' + it.note); }
+  parts.push('— Dược Phẩm ELI');
+  return parts.join(' ');
+}
+
+function imgHTML(it){
+  const b64 = PRODUCT_IMAGES[String(it.stt)];
+  if (b64 && it.__isCore){
+    return `<div class="thumb"><img src="${b64}" alt="${it.name}" loading="lazy"></div>`;
+  }
+  const emoji = CATEGORY_EMOJI[it.category] || '💊';
+  return `<div class="thumb noimg">${emoji}</div>`;
+}
+
+function cardHTML(it, isMed){
+  it.__isCore = !isMed;
+  const tiersHTML = (it.tiers||[]).map(t=>`<span class="tier">🎁 ${t}</span>`).join('');
+  const noteHTML = it.note ? `<div class="note">⚠️ ${it.note}</div>` : '';
+  const indHTML = it.indication ? `<div class="indication">${it.indication}</div>` : '';
+
+  let pitchHTML = '';
+  let actionsHTML = '';
+  if (!isMed){
+    const pid = 'p'+it.stt;
+    pitchHTML = `<div class="pitch-box" id="txt-${pid}">${pitchText(it)}</div>`;
+    actionsHTML = `<div class="card-actions">
+      <button class="act-btn send" onclick="sendToCustomer('${pid}', ${it.stt}, this)">📤 Gửi khách hàng</button>
+      <button class="act-btn" onclick="copyPitch('${pid}', this)">📋 Sao chép</button>
+    </div>`;
+  }
+
+  return `<div class="card">
+    ${imgHTML(it)}
+    <div class="card-body">
+      <div class="card-top">
+        <h3>${it.name}</h3>
+        <div class="price">${it.price}đ</div>
+      </div>
+      ${indHTML}
+      <div class="tiers">${tiersHTML}</div>
+      ${noteHTML}
+      ${pitchHTML}
+      ${actionsHTML}
+    </div>
+  </div>`;
+}
+
+function getText(pid){
+  return document.getElementById('txt-'+pid).textContent.trim();
+}
+
+async function urlToFile(url, filename){
+  try{
+    const res = await fetch(url);
+    const blob = await res.blob();
+    return new File([blob], filename, { type: blob.type || 'image/jpeg' });
+  } catch(e){ return null; }
+}
+
+function showToast(btn, msg, ok){
+  const old = btn.innerHTML;
+  btn.innerHTML = msg;
+  btn.classList.toggle('done', !!ok);
+  setTimeout(()=>{ btn.innerHTML = old; btn.classList.remove('done'); }, 1800);
+}
+
+async function sendToCustomer(pid, stt, btn){
+  const text = getText(pid);
+  const path = PRODUCT_IMAGES[String(stt)];
+  const file = path ? await urlToFile(path, 'san-pham.jpg') : null;
+
+  // Try native share WITH image first (best result: photo + caption together)
+  if (navigator.share){
+    try{
+      const payload = { title: 'ELI CTKM', text: text };
+      if (file && navigator.canShare && navigator.canShare({ files:[file] })){
+        payload.files = [file];
+      }
+      await navigator.share(payload);
+      return; // user completed or picked an app — done
+    } catch(e){
+      if (e && e.name === 'AbortError') return; // user cancelled on purpose, do nothing
+      // otherwise fall through to copy fallback below
+    }
+  }
+
+  // Fallback: device/app doesn't support sharing — copy text and say so clearly
+  const done = await copyToClipboard(text);
+  if (done){
+    showToast(btn, '📋 Đã chép nội dung — dán vào Zalo/Tin nhắn để gửi khách', true);
+  } else {
+    showToast(btn, '⚠️ Máy không hỗ trợ — bôi đen đoạn chữ bên dưới để tự chép', false);
+  }
+}
+
+async function copyToClipboard(text){
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    try{
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch(e){ /* denied or unsupported — fall through to legacy method */ }
+  }
+  try{
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return ok;
+  } catch(e){ return false; }
+}
+
+async function copyPitch(pid, btn){
+  const ok = await copyToClipboard(getText(pid));
+  showToast(btn, ok ? '✓ Đã chép' : '⚠️ Không chép được — bôi đen chữ bên dưới để tự chép', ok);
+}
+
+function renderResults(){
+  const core = ALL_CORE.filter(matches);
+  const med = ALL_MED.filter(matches);
+  const total = core.length + med.length;
+  document.getElementById('count').textContent = `${total} sản phẩm`;
+  const results = document.getElementById('results');
+  const empty = document.getElementById('empty');
+
+  if (total === 0){
+    results.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  let html = '';
+  if (core.length){
+    if (activeCat === "Tất cả"){
+      CATEGORY_ORDER.slice(1,-1).forEach(cat=>{
+        const items = core.filter(i=>i.category===cat);
+        if (!items.length) return;
+        html += `<div class="group-title">${CATEGORY_EMOJI[cat]||''} ${cat} <span class="n">${items.length}</span></div>`;
+        items.forEach(it=> html += cardHTML(it,false));
+      });
+    } else {
+      core.forEach(it=> html += cardHTML(it,false));
+    }
+  }
+  if (med.length){
+    html += `<div class="group-title">🩹 Vật tư y tế – Băng gạc <span class="n">${med.length}</span></div>`;
+    html += '<div class="med-list">' + med.map(it=>cardHTML(it,true)).join('') + '</div>';
+  }
+  results.innerHTML = html;
+}
+
+const searchInput = document.getElementById('search');
+function onSearchChange(e){
+  query = e.target.value;
+  renderResults();
+}
+// bind multiple events for maximum compatibility across mobile keyboards/webviews
+['input','keyup','change','search'].forEach(evt=>{
+  searchInput.addEventListener(evt, onSearchChange);
+});
+
+renderTabs();
+renderResults();
+
+/* ---------- PWA install handling ---------- */
+(function(){
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true;
+  if (isStandalone) return; // already installed/opened as app, don't prompt
+
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const installBtn = document.getElementById('installBtn');
+  const iosTip = document.getElementById('iosTip');
+
+  if (isIOS){
+    iosTip.classList.add('show');
+    return;
+  }
+
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e)=>{
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.style.display = 'block';
+  });
+  installBtn.addEventListener('click', async ()=>{
+    if (!deferredPrompt) return;
+    installBtn.style.display = 'none';
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+  });
+  window.addEventListener('appinstalled', ()=>{
+    installBtn.style.display = 'none';
+  });
+})();
+
+</script>
+</body>
+</html>
