@@ -234,6 +234,11 @@
   .cart-item .qtybox button{
     width:26px; height:26px; border-radius:8px; border:1px solid var(--line); background:#fff; cursor:pointer; font-weight:800;
   }
+  .cart-item .qtybox input.qty-input{
+    width:48px; text-align:center; border:1px solid var(--line); border-radius:8px; padding:4px 2px; font-size:13px; font-weight:700;
+  }
+  .cart-item .qtybox input.qty-input::-webkit-outer-spin-button,
+  .cart-item .qtybox input.qty-input::-webkit-inner-spin-button{ margin-left:2px; }
   .cart-item .rm{color:var(--danger); background:none; border:none; font-size:12px; cursor:pointer; font-weight:700;}
   .cart-empty{color:var(--ink-soft); font-size:13px; padding:20px 0; text-align:center;}
   .order-form{margin-top:14px; display:flex; flex-direction:column; gap:8px;}
@@ -250,6 +255,9 @@
   .order-status.ok{color:#1a7a3f;}
   .order-status.err{color:var(--danger);}
   .cart-item .promo{font-size:11.5px; color:#1a7a3f; font-weight:700; margin-top:2px;}
+  .cart-item .subtotal{font-size:11.5px; color:var(--ink-soft); margin-top:2px;}
+  .cart-total-row{display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-top:2px solid var(--line); margin-top:6px; font-weight:800; font-size:14.5px;}
+  .cart-total-row span:last-child{color:var(--teal-deep);}
   .cust-field{position:relative;}
   .cust-suggest{
     position:absolute; left:0; right:0; top:100%; background:#fff; border:1px solid var(--line);
@@ -511,7 +519,7 @@ function cardHTML(it, isMed){
 
   let pitchHTML = '';
   let actionsHTML = '';
-  const cartBtn = `<button class="add-cart-btn" onclick='addToCart(${JSON.stringify(String(it.stt))}, ${JSON.stringify(it.name).replace(/'/g,"&#39;")}, ${JSON.stringify(JSON.stringify(it.tiers||[])).replace(/'/g,"&#39;")}, this)'>🛒 Thêm vào đơn</button>`;
+  const cartBtn = `<button class="add-cart-btn" onclick='addToCart(${JSON.stringify(String(it.stt))}, ${JSON.stringify(it.name).replace(/'/g,"&#39;")}, ${JSON.stringify(JSON.stringify(it.tiers||[])).replace(/'/g,"&#39;")}, ${JSON.stringify(String(it.price||"0"))}, this)'>🛒 Thêm vào đơn</button>`;
   if (!isMed){
     const pid = 'p'+it.stt;
     pitchHTML = `<div class="pitch-box" id="txt-${pid}">${pitchText(it)}</div>`;
@@ -672,6 +680,7 @@ function showView(v){
     <button class="cart-close" onclick="closeCart()">✕</button>
     <h2>🛒 Đơn hàng của bạn</h2>
     <div id="cartItems"></div>
+    <div class="cart-total-row"><span>Tổng giá trị đơn hàng</span><span id="cartTotal">0đ</span></div>
     <div class="order-form" id="orderForm">
       <div class="cust-field">
         <input id="ofCustomer" type="text" autocomplete="off" placeholder="Tên khách hàng / phòng khám / nhà thuốc (gõ để tìm khách cũ)" oninput="onCustomerInput()" onfocus="onCustomerInput()" />
@@ -683,6 +692,7 @@ function showView(v){
         <option value="Miền Nam">Miền Nam</option>
         <option value="Miền Bắc">Miền Bắc</option>
       </select>
+      <input id="ofTDV" type="text" placeholder="Trình dược viên phụ trách (nếu có)" />
       <textarea id="ofNote" placeholder="Ghi chú thêm (nếu có)"></textarea>
       <button class="order-submit" id="ofSubmit" onclick="submitOrder()">Gửi đơn hàng</button>
       <div class="order-status" id="ofStatus"></div>
@@ -694,7 +704,7 @@ function showView(v){
 
 /* ---------- Giỏ hàng / Đặt hàng ---------- */
 // Sau khi deploy Apps Script (xem file AppsScript_DatHang.gs), dán Web app URL vào đây:
-const ORDER_ENDPOINT = "";
+const ORDER_ENDPOINT = "https://script.google.com/macros/s/AKfycbwZjtNCx-v-udFlUua7MqtndwoV3XkeoeZk3Mc0uCduol2f1qeJNdztQ4TeG9aIG1kh5Q/exec";
 
 let cart = {}; // { stt: {name, qty, tiers:[]} }
 let CUSTOMERS = []; // nạp từ Apps Script khi mở giỏ hàng lần đầu
@@ -717,10 +727,15 @@ function bestPromo(tiers, qty){
   return best;
 }
 
-function addToCart(stt, name, tiersJSON, btn){
+function parsePrice(s){
+  const n = parseInt(String(s).replace(/[^\d]/g,''), 10);
+  return isNaN(n) ? 0 : n;
+}
+
+function addToCart(stt, name, tiersJSON, priceStr, btn){
   let tiers = [];
   try{ tiers = JSON.parse(tiersJSON) || []; }catch(e){ tiers = []; }
-  if (!cart[stt]) cart[stt] = { name: name, qty: 0, tiers: tiers };
+  if (!cart[stt]) cart[stt] = { name: name, qty: 0, tiers: tiers, price: parsePrice(priceStr) };
   cart[stt].qty += 1;
   updateCartUI();
   if (btn){
@@ -737,6 +752,15 @@ function changeQty(stt, delta){
   if (cart[stt].qty <= 0) delete cart[stt];
   updateCartUI();
   renderCartItems();
+}
+
+function setQty(stt, value){
+  if (!cart[stt]) return;
+  const n = parseInt(value, 10);
+  if (!n || n <= 0){ delete cart[stt]; }
+  else { cart[stt].qty = n; }
+  updateCartUI();
+  setTimeout(renderCartItems, 0); // tránh xung đột với sự kiện change/blur đang xử lý trên chính ô input
 }
 
 function removeFromCart(stt){
@@ -771,16 +795,20 @@ function renderCartItems(){
     const it = cart[stt];
     const promo = bestPromo(it.tiers, it.qty);
     const promoHTML = promo ? `<div class="promo">🎁 Tặng thêm ${promo.free} (đạt mốc: ${promo.raw})</div>` : '';
+    const subtotal = (it.price||0) * it.qty;
     return `<div class="cart-item">
-      <div class="name">${it.name}${promoHTML}</div>
+      <div class="name">${it.name}${promoHTML}<div class="subtotal">${subtotal.toLocaleString('vi-VN')}đ</div></div>
       <div class="qtybox">
         <button onclick="changeQty('${stt}',-1)">−</button>
-        <span>${it.qty}</span>
+        <input type="number" inputmode="numeric" min="1" class="qty-input" value="${it.qty}"
+               onchange="setQty('${stt}', this.value)" onclick="this.select()">
         <button onclick="changeQty('${stt}',1)">+</button>
       </div>
       <button class="rm" onclick="removeFromCart('${stt}')">Xoá</button>
     </div>`;
   }).join('');
+  const grandTotal = keys.reduce((s,stt)=> s + (cart[stt].price||0)*cart[stt].qty, 0);
+  document.getElementById('cartTotal').textContent = grandTotal.toLocaleString('vi-VN') + 'đ';
 }
 
 function openCart(){
@@ -860,6 +888,7 @@ async function submitOrder(){
   const customer = document.getElementById('ofCustomer').value.trim();
   const phone = document.getElementById('ofPhone').value.trim();
   const region = document.getElementById('ofRegion').value;
+  const tdv = document.getElementById('ofTDV').value.trim();
   const note = document.getElementById('ofNote').value.trim();
 
   if (!customer || !phone || !region){
@@ -875,8 +904,9 @@ async function submitOrder(){
 
   const items = Object.values(cart).map(it=>{
     const promo = bestPromo(it.tiers, it.qty);
-    return { name: it.name, qty: it.qty, promo: promo ? promo.raw + ' → tặng ' + promo.free : '' };
+    return { name: it.name, qty: it.qty, promo: promo ? promo.raw + ' → tặng ' + promo.free : '', subtotal: (it.price||0)*it.qty };
   });
+  const orderTotal = items.reduce((s,it)=> s + (it.subtotal||0), 0);
 
   btn.disabled = true;
   btn.textContent = 'Đang gửi...';
@@ -885,7 +915,7 @@ async function submitOrder(){
       method: 'POST',
       mode: 'no-cors', // Apps Script Web App không hỗ trợ CORS preflight; gửi kiểu "fire-and-forget"
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ customer, phone, region, note, items })
+      body: JSON.stringify({ customer, phone, region, tdv, note, items, total: orderTotal })
     });
     statusEl.textContent = '✓ Đã gửi đơn hàng thành công!';
     statusEl.classList.add('ok');
@@ -896,6 +926,7 @@ async function submitOrder(){
     document.getElementById('ofCustomer').value = '';
     document.getElementById('ofPhone').value = '';
     document.getElementById('ofRegion').value = '';
+    document.getElementById('ofTDV').value = '';
     document.getElementById('ofNote').value = '';
     setTimeout(closeCart, 1500);
   } catch(err){
